@@ -1,4 +1,6 @@
 ﻿#include <iostream>
+#include <fstream>
+
 using namespace std;
 
 class student
@@ -151,16 +153,94 @@ protected:
 private:
 	int c;
 };
+				
+class example9	//动态多态
+{				//条件：1.有继承关系 2.子类重写父类虚函数
+public:			//使用：父类用指针或引用 执行子类对象
+				//若不用，则以父类为形参传子类，调用同名函数时是父类的函数而不是子类重写的函数
+	virtual void speak()	//virtual虚函数
+	{					
+		cout << "example9在调用speak()" << endl;
+	}
+};//总结：父类接收子类且调用子类重写函数 要在父类被重写函数前加virtual5s
+
+class example10:public example9
+{
+public:
+	void speak()
+	{
+		cout << "example10调用speak()" << endl;
+	}
+};
+void test06(example9& e1);
+void test07();
+
+class example11	//纯虚函数和抽象类 
+{
+public:
+	virtual void func() = 0;	//纯虚函数
+};								//一旦有纯虚函数 则1.该类为抽象类 2.子类必须重写纯虚函数
+								//若抽象类 则1.无法实例化对象 2.子类若不重写 则同为抽象类
+
+class example12	//虚析构和纯虚析构	作用：必须调用子类析构函数时(数据开辟在堆区)
+				//若不加，则只调用父类析构而不调用子类虚构
+{
+public:
+	virtual void speak() = 0;
+	example12()
+	{
+		cout << "example12的构造函数" << endl;
+	}
+	virtual ~example12()	//虚析构
+	{
+		cout << "example12的析构函数" << endl;
+	}
+	//virtual ~example12() = 0;		//纯虚析构	既要声明也要实现	且该类变为抽象类
+										
+};
+
+class example13 :public example12
+{
+public:
+	string* name;
+	void speak()
+	{
+		cout << *name << "在说话" << endl;
+	}
+	example13(string name)
+	{
+		cout << "example13的构造函数" << endl;
+		this->name = new string(name);
+	}
+	~example13()
+	{
+		if (name != NULL)
+		{
+			cout << "example13的析构函数" << endl;
+			delete name;
+			name = NULL;
+		}
+	}
+};
+void test08();	//子类开辟在堆区，父类指针接收
+				//若直接delete父类，则不会触发子类析构函数
+				// 解决办法：在父类析构前加virtual，则析构子，再析构父
+//函数重载
 void func1();
 void func1(int a, char b);
 void func1(char b, int a);
 void func2(int& a);
 void func2(const int& a);
+//void 
+//函数构造
 void test01();
-void test02();
+void test02();//不同对象的静态属性占同一片空间
+//文件操作
+void test09();
+
 int main()
 {
-	func2(10);
+	test09();
 	return 0;
 }
 
@@ -266,4 +346,68 @@ void test05()
 	e3 = e1.operator+(e2);
 	cout << e3.a << " " << e3.b << endl;
 	e3("hello world");//伪函数 
+}
+
+void test06(example9& e1)
+{
+	e1.speak();
+}
+
+void test07()
+{
+	example9 e1;
+	example10 e2;
+	test06(e2);
+}
+
+void test08()
+{
+	example12* e12 = new example13("tom");
+	e12->speak();
+	delete e12;
+}
+
+void test09()
+{
+	ofstream ofs;
+	/*ofs.open("test.txt", ios::out);
+	ofs << "这是第一行内容" << endl;
+	ofs << "这是第二行内容" << endl;*/
+	ofs.close();
+
+	ifstream ifs;
+	/*ifs.open("test.txt", ios::in);
+	if (!ifs.is_open())
+	{
+		cout << "打开失败" << endl;
+		return;
+	}
+	char buff[1024] = { 0 };*/
+
+	/*while (ifs >> buff)
+	{
+		cout << buff << endl;
+	}*/
+	
+	/*while (ifs.getline(buff, sizeof(buff)))
+	{
+		cout << buff << endl;
+	}*/
+	ifs.close();
+	//string name = "xiao";
+	//ofstream ofs1("xiao.txt", ios::out | ios::binary);
+	//ofs1.write((const char*)&name, sizeof(name));//2进制模式用write
+	/*ofs1.close();*/
+
+	ifstream ifs1("xiao.txt", ios::in | ios::binary);
+	if (!ifs1.is_open())
+	{
+		cout << "打开失败" << endl;
+		return;
+	}
+	string name1;
+	ifs1.read((char*)&name1, sizeof(name1));
+	cout << name1 << endl;
+	ifs.close();
+
 }

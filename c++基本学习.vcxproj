@@ -132,6 +132,10 @@
     </ClCompile>
     <ClCompile Include="test.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="test.txt" />
+    <Text Include="xiao.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
