@@ -3,6 +3,133 @@
 
 using namespace std;
 
+//template<typename M>	函数模板	typename: 表示后面是数据类型 
+template<class T>		//类模板		用class可以表示类或函数模板
+//T为通用数据类型		必须紧跟着声明或实现
+void test10(T& a, T& b)
+{
+	T temp = a;
+	a = b;
+	b = temp;
+}
+void test11();
+
+template<class T>	//必须在紧跟的函数中确定T的数据类型
+void test12()
+{
+	cout << "这在说明定义了模板T则必须确定T的数据类型" << endl;
+}
+
+template<class T>
+void test13(T arr[],int len)
+{
+	for (int i = 0; i < len; i++)
+	{
+		int min = i;
+		for (int j = i + 1; j < len; j++)
+		{
+			if (arr[min] > arr[j])
+			{
+				min = j;
+			}
+		}
+		if (min != i)
+		{
+			test10(arr[min],arr[i]);
+		}
+	}
+}
+template<class T>
+void test14(T arr[], int len)
+{
+	for (int i = 0; i < len; i++)
+	{
+		cout << arr[i];
+	}
+	cout << endl;
+}
+void test15()
+{
+	char arr[5] = { 'e','d','c','b','a'};
+	test13(arr, 5);
+	test14(arr, 5);
+}
+//普通函数和函数模板调用规则
+//1.两者都可调用，则优先调用普通函数
+//2.若要强制调用函数模板，则使用空模板参数(例：test16<>(a,b);)
+//3.函数模板可以重载
+//4.若模板匹配的更好，则调用函数模板
+template<class T>
+void test16(T a, T b)
+{
+	cout << "调用的函数模板" << endl;	
+}
+void test16(int a, int b)
+{
+	cout << "调用普通函数" << endl;
+}
+void test17();
+
+class example14
+{
+public:
+	int a;
+	int b;
+	example14(int a, int b)
+	{
+		this->a = a;
+		this->b = b;
+	}
+};
+template<typename T>
+bool test18(T& a, T& b)//问题：当输入自定义数据类型时，运算符无法正常工作
+{
+	if (a == b)	//系统无法比较两个自定义类是否相等
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+void test19();	//解决：如下函数 专门给某个自定义类将函数模板具体化
+template<> bool test18(example14& a, example14& b)
+{
+	cout << "调用具体化模板" << endl;
+	if (a.a == b.a && a.b == b.b)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+//类模板
+template<class atype,class btype>	//可以定义多个参数
+class example15
+{
+public:
+	atype a;
+	btype b;
+	example15(atype a, btype b)
+	{
+		this->a = a;
+		this->b = b;
+	}
+};
+void test20();
+
+//类模板和函数模板区别：
+//1.类模板没有自动类型推导，只能用显式指定类型
+//2.类模板参数列表可以有默认参数(例：template<class atype=int>)
+//	这样利用类创建变量时可以少指定类型 
+
+//类模板和普通类 成员函数创建时机不同：
+//类模板在调用时创建 普通类一开始便创建
+//原因：类模板中T不明确，只有调用时T才明确
 class student
 {
 public:				//自己可以访问类内，别人也可以访问类内
@@ -59,7 +186,7 @@ public:
 
 	example1(const example1 &e1)//不用系统提供的浅拷贝，自己设计拷贝函数解决问题
 	{
-		this->age = age;
+		this->age = e1.age;
 		this->height = new int(*e1.height);//重新new一块区域存放height数据
 	}
 };
@@ -74,7 +201,7 @@ public:
 	example2(int a1, int b1, int c1) :a(a1), b(b1), c(c1) {}
 };
 
-class examples3		//静态成员变量
+class example3		//静态成员变量
 {
 public:
 	static int a;	//所有对象的静态成员变量共享一块空间 例：test02()
@@ -86,7 +213,7 @@ public:
 		//b = 200;	//不可访问普通成员变量 原因：成员变量必须通过对象访问
 	}
 };					
-int examples3::a = 100;	//类外初始化 原因：编译时分配内存
+int example3::a = 100;	//类外初始化 原因：编译时分配内存
 
 class example4	//this指针和const
 {
@@ -240,7 +367,7 @@ void test09();
 
 int main()
 {
-	test09();
+	test20();
 	return 0;
 }
 
@@ -292,9 +419,9 @@ void test01()//三种构造函数调用
 
 void test02()
 {
-	examples3 e1;
+	example3 e1;
 	cout << e1.a << endl;	//输出e1.a，得100
-	examples3 e2;
+	example3 e2;
 	e2.a = 200;				//修改e2.a
 	cout << e1.a << endl;	//依旧输出e1.a,得200(e2.a)
 	//结论：该类创建的对象，静态成员变量共享同一块空间
@@ -410,4 +537,38 @@ void test09()
 	cout << name1 << endl;
 	ifs.close();
 
+}
+
+void test11()
+{
+	int a = 1;
+	int b = 2;
+	//1.自动推导T为int
+	test10(a, b);
+	//手动赋值T为int
+	test10<int>(a, b);	//可以发生隐式类型转化，也就是即使指定int也可以传char等
+}
+
+void test17()
+{
+	int a = 0;
+	int b = 0;
+	test16<>(a, b);
+}
+
+void test19()
+{
+	int a = 10;
+	int b = 20;
+	cout << test18(a, b) << endl;
+
+	example14 a1(1, 1);
+	example14 b1(1, 1);
+	cout << test18(a1, b1) << endl;
+}
+
+void test20()
+{
+	example15<string,int> e1("xiao", 12);
+	cout << e1.a << " " << e1.b << endl;
 }
