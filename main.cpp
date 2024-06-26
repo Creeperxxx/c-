@@ -130,6 +130,86 @@ void test20();
 //类模板和普通类 成员函数创建时机不同：
 //类模板在调用时创建 普通类一开始便创建
 //原因：类模板中T不明确，只有调用时T才明确
+
+template<class T>	//类模板实例化对象作函数参数 建议指定模板类型
+class example16
+{
+public:
+	T a;
+	example16(T a)
+	{
+		this->a = a;
+	}
+};
+void test21();
+void test22(example16<int> e);
+
+template<class T>	//类模板与继承
+class example17
+{
+public:
+	T a;
+};
+//父类是类模板，子类继承时	1.必须指定继承的模板数据类型	2.或子类也是类模板
+//class example18 :public example17<int>	
+template<class T1,class T2>
+class example18 :public example17<T2>	//T2为模板，指向父类继承的模板
+{
+public:
+	T1 b;	//T1指向b
+};
+
+template<class T1, class T2>	//类模板成员函数类外实现
+class example19
+{
+public:
+	T1 a;
+	T2 b;
+	example19(T1 a, T2 b);
+	void func1();
+};
+
+//类模板分文件编写
+//解释：类模板分.cpp和.h编写
+//问题：引用.h，调用成员函数出错。
+//原因：类模板成员函数只有调用时才创建。包含.h，而.h中无成员函数实现，使编译器不知成员函数
+//解决：1.引用"xxx.cpp"	2.将声明和定义写一起，后缀".hpp"
+
+template<class T1,class T2>	//模板内友元全局函数在类外实现
+class example20;
+
+template<class T1, class T2>
+void func2(example20<T1, T2>& e1)
+{
+	cout << "全局函数类外实现" << endl;
+}
+
+template<class T1,class T2>
+class example20
+{
+public:
+	example20(T1 a, T2 b)
+	{
+		this->a = a;
+		this->b = b;
+	}
+	friend void func1(example20<T1,T2> &e1)	//友元但全局函数类内实现
+	{
+		cout << "全局函数类内实现" << e1.a << e1.b << endl;
+	}
+
+	friend void func2<>(example20<T1, T2>& e2);	//友元但全局函数类外实现
+private:
+	T1 a;
+	T2 b;
+};
+void test23()
+{
+	example20<int, int> e(1, 1);
+	func2(e);
+}
+
+
 class student
 {
 public:				//自己可以访问类内，别人也可以访问类内
@@ -367,7 +447,7 @@ void test09();
 
 int main()
 {
-	test20();
+	test23();
 	return 0;
 }
 
@@ -572,3 +652,28 @@ void test20()
 	example15<string,int> e1("xiao", 12);
 	cout << e1.a << " " << e1.b << endl;
 }
+
+void test21()
+{
+	example16<int> e(5);
+	test22(e);
+}
+
+void test22(example16<int> e)
+{
+	cout << e.a << endl;
+}
+
+template<class T1,class T2>
+example19<T1, T2>::example19(T1 a, T2 b)
+{
+	this->a = a;
+	this->b = b;
+}
+template<class T1,class T2>
+void example19<T1,T2>::func1()
+{
+	cout << this->a << endl;
+	cout << this->b << endl;
+}
+
